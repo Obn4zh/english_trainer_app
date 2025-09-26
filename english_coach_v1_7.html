@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>English Coach — Mega + Live Score (v1.7 Google-accurate RU Translate)</title>
+<style>
+  :root{
+    --bg:#0b0f14;--card:rgba(255,255,255,.08);--stroke:rgba(255,255,255,.18);
+    --accent:#6ae3ff;--accent2:#8d7bff;--good:#35d07f;--warn:#ffcf5c;--bad:#ff5c7a;
+    --txt:#e7edf5;--muted:#9fb2c6;--shadow:0 20px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+    --radius:16px
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    color:var(--txt);
+    background:
+      radial-gradient(1200px 800px at 20% -10%,#17324a 0%,transparent 60%),
+      radial-gradient(1000px 700px at 120% 10%,#2a1b4d 0%,transparent 60%),#0b0f14;
+    min-height:100svh
+  }
+  header{position:sticky;top:0;backdrop-filter:saturate(120%) blur(14px);
+    background:linear-gradient(180deg,rgba(12,16,23,.9),rgba(12,16,23,.6));
+    border-bottom:1px solid var(--stroke);z-index:10}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px}
+  .topbar{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.2px}
+  .logo{width:34px;height:34px;border-radius:10px;background:conic-gradient(from 210deg,var(--accent),var(--accent2));
+    box-shadow:0 6px 18px rgba(106,227,255,.25),inset 0 0 12px rgba(255,255,255,.2)}
+  nav{display:flex;gap:8px;flex-wrap:nowrap;overflow:auto;white-space:nowrap;scrollbar-width:thin;padding-bottom:2px}
+  nav::-webkit-scrollbar{height:6px}
+  nav button{
+    border:1px solid var(--stroke);background:var(--card);color:var(--txt);
+    padding:10px 14px;border-radius:12px;cursor:pointer;
+    transition:.2s transform,.2s background;flex:0 0 auto
+  }
+  nav button.active,nav button:hover{
+    background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
+    transform:translateY(-1px)
+  }
+
+  .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .select,.btn,.input,select,input,textarea{
+    background:var(--card);border:1px solid var(--stroke);color:var(--txt);
+    border-radius:12px;padding:10px 12px;outline:none
+  }
+  .btn{cursor:pointer;font-weight:600;letter-spacing:.2px;box-shadow:var(--shadow);
+    background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04))}
+  .btn.primary{background:linear-gradient(180deg,rgba(106,227,255,.35),rgba(141,123,255,.25));border-color:transparent}
+
+  .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+  .card{background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  h1,h2{margin:.2em 0 .6em 0}
+  h1{font-size:26px}
+  h2{font-size:20px;color:var(--muted)}
+  .muted{color:var(--muted)}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .stack{display:flex;flex-direction:column;gap:12px}
+  .big{font-size:44px;font-weight:800;letter-spacing:.6px}
+  .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--stroke);background:var(--card);color:var(--muted)}
+  .progress{height:14px;background:#0e141c;border:1px solid var(--stroke);border-radius:999px;overflow:hidden}
+  .progress>span{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--bad),var(--warn),var(--good))}
+  .scoreline{display:flex;align-items:center;gap:10px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .scoreline .score{font-weight:800}
+  .score.good{color:var(--good)}.score.mid{color:var(--warn)}.score.bad{color:var(--bad)}
+  .vu{height:40px;border-radius:10px;background:#0d1218;border:1px solid var(--stroke);display:grid;grid-template-columns:repeat(32,1fr);gap:2px;padding:4px}
+  .vu div{background:#101826;border-radius:4px;transition:height .06s ease,background .12s ease}
+  .target,.live{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .tag{font-size:12px;color:var(--muted)}
+  .list{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto;padding-right:4px}
+  .list button{justify-content:space-between;width:100%;display:flex}
+  .phrase{padding:8px 10px;border-radius:10px;border:1px solid var(--stroke);background:var(--card)}
+  .kbd{font-family:ui-monospace,monospace;font-weight:700;background:#0c1118;border:1px solid var(--stroke);padding:2px 6px;border-radius:6px}
+  .footer-note{color:var(--muted);font-size:12px}
+  .lang-toggle{display:flex;gap:6px;align-items:center}
+  .hidden{display:none!important}
+  .shine{position:relative;overflow:hidden}
+  .shine::after{content:"";position:absolute;inset:-200% -150%;
+    background:conic-gradient(from 180deg,transparent 0 46%,rgba(255,255,255,.3) 48% 52%,transparent 54% 100%);
+    animation:shine 6s linear infinite}
+  @keyframes shine{to{transform:translateX(40%)}}
+
+  .trans-box{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .trans-title{color:var(--muted);font-size:12px}
+  .trans-actions a, .trans-actions button{color:var(--accent);text-decoration:none;border:1px solid var(--stroke);padding:4px 8px;border-radius:8px;background:transparent;cursor:pointer}
+  .trans{margin-top:6px;min-height:24px}
+
+  @media (max-width: 1024px){ .grid{grid-template-columns:1fr} .list{max-height:46vh} }
+  @media (max-width: 640px){
+    .wrap{padding:14px}
+    .brand .big{font-size:28px}
+    h1{font-size:22px} h2{font-size:18px}
+    nav button{padding:8px 12px}
+    .card{padding:14px;border-radius:14px}
+    .row--stack-m{flex-direction:column;align-items:stretch}
+    .btn, .select, .input, select, input, textarea{padding:12px 12px;border-radius:14px}
+    .btn, .select{min-height:44px}
+    .vu{height:28px}
+    .list{max-height:50vh}
+    .controls .lang-toggle{display:none}
+    .target{font-size:20px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <div class="big">English Coach</div>
+        <div class="muted" data-i18n="subtitle">Произношение, слова и прогресс</div>
+      </div>
+    </div>
+    <nav id="tabs" aria-label="Навигация по разделам">
+      <button data-tab="home" class="active" data-i18n="tab_home">Главная</button>
+      <button data-tab="pronounce" data-i18n="tab_pron">Тренировка произношения</button>
+      <button data-tab="custom" data-i18n="tab_custom">Своя фраза</button>
+      <button data-tab="vocab" data-i18n="tab_vocab">Изучение слов</button>
+      <button data-tab="settings" data-i18n="tab_settings">Настройки</button>
+    </nav>
+    <div class="controls">
+      <div class="lang-toggle" title="Переключить язык интерфейса">
+        <span class="pill">RU / EN</span>
+        <label class="pill" style="display:flex;align-items:center;gap:6px;padding:6px 8px">
+          <input type="checkbox" id="langSwitch"/><span id="langLabel">RU</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap stack" style="padding-top:18px;padding-bottom:40px">
+  <section id="home" class="grid">
+    <div class="card shine">
+      <h1 data-i18n="home_title">Добро пожаловать!</h1>
+      <p class="muted" data-i18n="home_p1">
+        Версия Mega + Live Score: реальная оценка при речи, мегапаки &gt;1000 фраз, фикс микрофона во «Своя фраза».
+      </p>
+      <div class="row row--stack-m" style="gap:16px;margin-top:10px">
+        <button class="btn primary" onclick="goTab('pronounce')" data-i18n="home_cta1">Начать тренировку</button>
+        <button class="btn" onclick="goTab('custom')" data-i18n="home_cta2">Своя фраза</button>
+      </div>
+      <ul class="muted" style="margin-top:16px;line-height:1.7">
+        <li data-i18n="home_l1">Оценка по Левенштейну в реальном времени</li>
+        <li data-i18n="home_l2">VU-индикатор громкости и распознавание речи</li>
+        <li data-i18n="home_l3">Мегапаки фраз, TTS-озвучка</li>
+        <li data-i18n="home_l4">Лучший результат сохраняется локально</li>
+        <li data-i18n="home_l5">Русский / английский интерфейс</li>
+      </ul>
+      <div class="footer-note" data-i18n="home_note">
+        Совет: используйте наушники, чтобы микрофон не ловил звук синтезатора речи.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="quick_start">Быстрый старт</h2>
+      <ol class="muted" style="line-height:1.8">
+        <li data-i18n="qs1">Откройте вкладку «Тренировка произношения» или «Своя фраза».</li>
+        <li data-i18n="qs2">Нажмите «Говорить» и читайте цель вслух; процент будет меняться онлайн.</li>
+        <li data-i18n="qs3">Рекорд по фразе сохраняется автоматически (🏆).</li>
+      </ol>
+      <div class="pill" id="supportNote"></div>
+    </div>
+  </section>
+
+  <section id="pronounce" class="grid hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h1 data-i18n="pron_title">Тренировка произношения</h1>
+        <div class="row"><span class="pill" id="bestRecord" title="Best score">🏆 0%</span></div>
+      </div>
+
+      <div class="row row--stack-m" style="gap:12px">
+        <label class="pill"><span data-i18n="level">Уровень:</span>
+          <select id="levelSel" class="select">
+            <option value="beginner" selected>Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </label>
+        <label class="pill"><span data-i18n="pack">Набор фраз:</span>
+          <select id="packSel" class="select"></select>
+        </label>
+        <label class="pill"><span data-i18n="rec_lang">Язык распознавания:</span>
+          <select id="recLang" class="select">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="stack" style="margin-top:10px">
+        <div class="target" id="targetPhrase" style="font-size:22px"></div>
+        <div class="trans-box">
+          <span class="trans-title">Перевод цели:</span>
+          <div class="trans-actions">
+            <button id="toggleTranslator" title="Фиксировано EN→RU">🌐 Переводчик: <span id="trMode">Google</span></button>
+            <a id="gtTarget" target="_blank" rel="noopener">Google</a>
+          </div>
+        </div>
+        <div class="phrase trans" id="targetTrans"></div>
+
+        <div class="live muted" id="liveText" style="min-height:24px"></div>
+        <div class="trans-box">
+          <span class="trans-title">Перевод речи (онлайн):</span>
+          <div class="trans-actions"><a id="gtLive" target="_blank" rel="noopener">Google</a></div>
+        </div>
+        <div class="phrase trans muted" id="liveTrans"></div>
+
+        <div class="progress"><span id="simBar"></span></div>
+        <div class="scoreline"><span class="muted">Оценка:</span><span id="simText" class="score">0%</span></div>
+
+        <div class="row row--stack-m" style="gap:10px">
+          <button class="btn" id="prevBtn">⟵</button>
+          <button class="btn primary" id="speakBtn" data-i18n="listen">Слушать</button>
+          <button class="btn" id="recBtn" data-i18n="talk">Говорить</button>
+          <button class="btn" id="finishBtn" data-i18n="finish">Стоп</button>
+          <button class="btn" id="nextBtn">⟶</button>
+        </div>
+
+        <div class="tag" data-i18n="hint_keys">Горячие клавиши: L — слушать, G — говорить, ←/→ — фраза</div>
+        <div class="vu" id="vu"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="phrases">Фразы</h2>
+      <div class="list" id="phraseList"></div>
+    </div>
+  </section>
+
+  <section id="custom" class="grid hidden">
+    <div class="card">
+      <h1 data-i18n="custom_title">Своя фраза</h1>
+      <textarea id="customText" rows="3" class="input" placeholder="Type or paste your phrase here..."></textarea>
+
+      <div class="trans-box" style="margin-top:8px">
+        <span class="trans-title">Перевод цели:</span>
+        <div class="trans-actions">
+          <a id="gtCustomTarget" target="_blank" rel="noopener">Google</a>
+        </div>
+      </div>
+      <div class="phrase trans" id="customTargetTrans"></div>
+
+      <div class="row row--stack-m" style="margin-top:10px">
+        <button class="btn primary" id="ttsCustom" data-i18n="listen">Слушать</button>
+        <button class="btn" id="recCustom" data-i18n="talk">Говорить</button>
+        <button class="btn" id="finishCustom" data-i18n="finish">Стоп</button>
+      </div>
+
+      <div class="live muted" id="liveCustom" style="min-height:24px;margin-top:8px"></div>
+      <div class="trans-box">
+        <span class="trans-title">Перевод речи (онлайн):</span>
+        <div class="trans-actions"><a id="gtCustomLive" target="_blank" rel="noopener">Google</a></div>
+      </div>
+      <div class="phrase trans muted" id="liveCustomTrans"></div>
+
+      <div class="progress" style="margin-top:10px"><span id="simBarCustom"></span></div>
+      <div class="scoreline"><span class="muted">Оценка:</span><span id="simTextCustom" class="score">0%</span></div>
+      <div class="vu" id="vu2" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="tips">Советы</h2>
+      <ul class="muted" style="line-height:1.8">
+        <li data-i18n="tip1">Короткие фразы распознаются точнее. Начните с них.</li>
+        <li data-i18n="tip2">Ставьте запятые для пауз, пробуйте разные голоса TTS.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="vocab" class="grid hidden">
+    <div class="card">
+      <h1 data-i18n="vocab_title">Изучение слов</h1>
+      <div class="row row--stack-m" style="gap:10px">
+        <button class="btn" id="vocabPrev">⟵</button>
+        <div class="phrase" id="vocabWord" style="font-size:22px;min-width:200px">—</div>
+        <button class="btn" id="vocabNext">⟶</button>
+        <button class="btn primary" id="vocabSpeak" data-i18n="listen">Слушать</button>
+        <button class="btn" id="vocabReveal" data-i18n="reveal">Показать перевод</button>
+      </div>
+      <div class="phrase" id="vocabTrans" style="margin-top:10px;display:none"></div>
+      <div class="row" style="margin-top:10px;gap:10px">
+        <button class="btn" id="markEasy" data-i18n="easy">Легко</button>
+        <button class="btn" id="markHard" data-i18n="hard">Сложно</button>
+        <span class="pill" id="vocabProgress">0/0</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="vocab_sets">Наборы слов</h2>
+      <div class="list" id="vocabList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Обновление/импорт наборов</h2>
+      <div class="stack">
+        <div class="row row--stack-m">
+          <label class="pill"><span>Размер мегапака:</span><input type="number" id="megaSize" min="200" max="3000" step="50" value="1200" style="width:120px"/></label>
+          <label class="pill"><span>Seed:</span><input type="number" id="megaSeed" min="1" max="999999" value="42" style="width:120px"/></label>
+          <button class="btn" id="regenMega">🔁 Пересобрать мегапак</button>
+        </div>
+        <div class="row row--stack-m">
+          <input class="input" id="packsUrl" placeholder="URL до JSON с наборами (схема: { 'Set': [['word','перевод'],...] })" style="flex:1;min-width:260px"/>
+          <button class="btn" id="loadPacksUrl">Загрузить по URL</button>
+        </div>
+        <div class="row row--stack-m">
+          <input type="file" id="packsFile" accept=".json" class="input"/>
+          <button class="btn" id="loadPacksFile">Импорт из файла</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Свои слова</h2>
+      <p class="muted">Строки вида <span class="kbd">word — перевод</span> (одно слово на строку). Разделитель: дефис/тире или точка с запятой.</p>
+      <div class="row row--stack-m" style="gap:10px">
+        <input class="input" id="vocabSetName" placeholder="Напр.: My Travel Pack" style="min-width:220px"/>
+        <button class="btn" id="addVocabSet">Добавить набор</button>
+      </div>
+      <textarea id="vocabImport" class="input" rows="6" placeholder="apple — яблоко
+ticket — билет
+delicious — вкусный
+..."></textarea>
+    </div>
+  </section>
+
+  <section id="settings" class="grid hidden">
+    <div class="card">
+      <h1 data-i18n="settings_title">Настройки</h1>
+      <div class="stack">
+        <div class="row row--stack-m">
+          <label class="pill"><span data-i18n="tts_voice">Голос TTS:</span><select id="voiceSel" class="select"></select></label>
+          <label class="pill"><span data-i18n="rate">Скорость:</span><input type="range" min="0.6" max="1.4" step="0.05" id="rate" value="1"/></label>
+          <label class="pill"><span data-i18n="pitch">Высота:</span><input type="range" min="0.6" max="1.6" step="0.05" id="pitch" value="1"/></label>
+          <label class="pill"><span data-i18n="volume">Громкость:</span><input type="range" min="0" max="1" step="0.05" id="volume" value="1"/></label>
+        </div>
+        <div class="footer-note">Статус переводчика: <span id="translatorStatus">—</span></div>
+        <div class="footer-note" id="permNote"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="about">О приложении</h2>
+      <p class="muted" data-i18n="about_p">Работает офлайн (кроме распознавания и онлайн‑перевода), хранит прогресс локально, не требует установок.</p>
+      <div class="pill">v1.7 Google-accurate RU Translate</div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ===== I18N ===== */
+const I18N={ru:{subtitle:"Произношение, слова и прогресс",tab_home:"Главная",tab_pron:"Тренировка произношения",tab_custom:"Своя фраза",tab_vocab:"Изучение слов",tab_settings:"Настройки",home_title:"Добро пожаловать!",home_p1:"Версия Mega + Live Score: реальная оценка при речи, мегапаки >1000 фраз, фикс микрофона во «Своя фраза».",home_cta1:"Начать тренировку",home_cta2:"Своя фраза",home_l1:"Оценка по Левенштейну в реальном времени",home_l2:"VU-индикатор громкости и распознавание речи",home_l3:"Мегапаки фраз, TTS-озвучка",home_l4:"Лучший результат сохраняется локально",home_l5:"Русский / английский интерфейс",home_note:"Совет: используйте наушники, чтобы микрофон не ловил звук синтезатора речи.",quick_start:"Быстрый старт",qs1:"Откройте вкладку «Тренировка произношения» или «Своя фраза».",qs2:"Нажмите «Говорить» и читайте цель вслух; процент будет меняться онлайн.",qs3:"Рекорд по фразе сохраняется автоматически (🏆).",pron_title:"Тренировка произношения",level:"Уровень:",pack:"Набор фраз:",rec_lang:"Язык распознавания:",listen:"Слушать",talk:"Говорить",finish:"Стоп",hint_keys:"Горячие клавиши: L — слушать, G — говорить, ←/→ — фраза",phrases:"Фразы",custom_title:"Своя фраза",tips:"Советы",tip1:"Короткие фразы распознаются точнее. Начните с них.",tip2:"Ставьте запятые для пауз, пробуйте разные голоса TTS.",vocab_title:"Изучение слов",reveal:"Показать перевод",easy:"Легко",hard:"Сложно",vocab_sets:"Наборы слов",settings_title:"Настройки",tts_voice:"Голос TTS:",rate:"Скорость:",pitch:"Высота:",volume:"Громкость:",test:"Тест",clear:"Сбросить лучшие результаты",about:"О приложении",about_p:"Работает офлайн (кроме распознавания и онлайн‑перевода), хранит прогресс локально, не требует установок."},
+en:{subtitle:"Pronunciation, vocabulary & progress",tab_home:"Home",tab_pron:"Pronunciation Training",tab_custom:"Custom Phrase",tab_vocab:"Word Study",tab_settings:"Settings",home_title:"Welcome!",home_p1:"Mega + Live Score: real-time scoring, 1000+ phrase mega-packs, custom mic fix.",home_cta1:"Start Training",home_cta2:"Custom Phrase",home_l1:"Real-time Levenshtein scoring",home_l2:"VU meter & speech recognition",home_l3:"Mega phrase packs, TTS playback",home_l4:"Best results saved locally",home_l5:"Bilingual interface (RU/EN)",home_note:"Tip: use headphones so your mic won't pick up TTS audio.",quick_start:"Quick Start",qs1:"Open “Pronunciation” or “Custom Phrase”.",qs2:"Click “Speak” and read; percentage updates live.",qs3:"Best per phrase is saved automatically (🏆).",pron_title:"Pronunciation Training",level:"Level:",pack:"Phrase pack:",rec_lang:"Recognition language:",listen:"Listen",talk:"Speak",finish:"Stop",hint_keys:"Hotkeys: L — listen, G — speak, ←/→ — phrase",phrases:"Phrases",custom_title:"Custom Phrase",tips:"Tips",tip1:"Short phrases recognize more reliably. Start there.",tip2:"Use commas for pauses; try different TTS voices.",vocab_title:"Word Study",reveal:"Reveal translation",easy:"Easy",hard:"Hard",vocab_sets:"Word sets",settings_title:"Settings",tts_voice:"TTS voice:",rate:"Rate:",pitch:"Pitch:",volume:"Volume:",test:"Test",clear:"Clear best scores",about:"About",about_p:"Works offline (speech recognition & online translate depend on browser), stores progress locally, no install required."}};
+let LANG='ru';const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function applyI18N(){const d=I18N[LANG];$$('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(d[k]) el.textContent=d[k];});$('#langLabel').textContent=LANG.toUpperCase();}
+$('#langSwitch').addEventListener('change',e=>{LANG=e.target.checked?'en':'ru';document.documentElement.lang=LANG==='en'?'en':'ru';applyI18N();});
+function goTab(id){$$('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));['home','pronounce','custom','vocab','settings'].forEach(t=>$('#'+t).classList.toggle('hidden',t!==id));}
+$('#tabs').addEventListener('click',e=>{if(e.target.tagName==='BUTTON') goTab(e.target.dataset.tab);});
+
+/* ===== Random phrase generator bits ===== */
+function PRNG(seed){let s=seed>>>0||1;return()=>{s=(s*1664525+1013904223)>>>0;return s/2**32}}
+function choice(r,arr){return arr[Math.floor(r()*arr.length)]}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+const WORDS={subjBeg:["I","You","He","She","We","They"],subjInt:["My boss","Our team","The client","The system","This app","The report"],subjAdv:["The committee","Market forces","Conventional wisdom","The hypothesis","Recent studies","Stakeholders"],verbsBeg:["like","need","want","have","see","know","find","try","feel","use","learn","travel to","work on","cook","buy"],verbsInt:["optimize","schedule","deliver","discuss","analyze","update","review","negotiate","prioritize","estimate","debug"],verbsAdv:["refute","corroborate","substantiate","synthesize","reconsider","generalize","reframe","deconstruct","challenge","contextualize"],objsBeg:["a book","coffee","a new phone","this idea","English","a ticket","a plan","a solution","a friend","a job","a meal"],objsInt:["the roadmap","our metrics","the proposal","a presentation","the dataset","user feedback","a prototype","the budget","requirements"],objsAdv:["the underlying premise","the causal link","our methodology","the initial assumption","the prevailing narrative","the counterexample"],places:["at home","at work","at school","in the office","in the city","in the kitchen","on the train","on the bus","at the airport","at the gym"],times:["today","tomorrow","yesterday","this week","next month","on Monday","every day","at night","in the morning","on weekends"]};
+const TEMPLATES={beginner:[(r)=>`${choice(r,WORDS.subjBeg)} ${choice(r,WORDS.verbsBeg)} ${choice(r,WORDS.objsBeg)}.`,(r)=>`${choice(r,WORDS.subjBeg)} ${choice(r,WORDS.verbsBeg)} ${choice(r,WORDS.objsBeg)} ${choice(r,WORDS.places)}.`,(r)=>`${choice(r,WORDS.subjBeg)} ${choice(r,WORDS.verbsBeg)} ${choice(r,WORDS.objsBeg)} ${choice(r,WORDS.times)}.`,(r)=>`${choice(r,WORDS.subjBeg)} don't ${choice(r,WORDS.verbsBeg)} ${choice(r,WORDS.objsBeg)}.`,(r)=>`Do ${choice(r,WORDS.subjBeg).toLowerCase()} ${choice(r,WORDS.verbsBeg)} ${choice(r,WORDS.objsBeg)}?`],intermediate:[(r)=>`${choice(r,WORDS.subjInt)} will ${choice(r,WORDS.verbsInt)} ${choice(r,WORDS.objsInt)} ${choice(r,WORDS.times)}.`,(r)=>`${choice(r,WORDS.subjInt)} is ${choice(r,["currently","actively","partly"])} trying to ${choice(r,WORDS.verbsInt)} ${choice(r,WORDS.objsInt)}.`,(r)=>`${choice(r,WORDS.subjInt)} ${choice(r,["did","did not"])} ${choice(r,WORDS.verbsInt)} ${choice(r,WORDS.objsInt)} ${choice(r,["yesterday","last week","on Friday"])}.`,(r)=>`${choice(r,WORDS.subjInt)} should ${choice(r,WORDS.verbsInt)} ${choice(r,WORDS.objsInt)} ${choice(r,["soon","first","together"])}.`,(r)=>`If ${choice(r,WORDS.subjInt).toLowerCase()} ${choice(r,["can","cannot"])} ${choice(r,WORDS.verbsInt)} ${choice(r,WORDS.objsInt)}, we will ${choice(r,WORDS.verbsInt)} it later.`],advanced:[(r)=>`${choice(r,WORDS.subjAdv)} ${choice(r,["fundamentally","partially","empirically"])} ${choice(r,WORDS.verbsAdv)} ${choice(r,WORDS.objsAdv)}.`,(r)=>`${choice(r,WORDS.subjAdv)} may ${choice(r,["inadvertently","implicitly","explicitly"])} ${choice(r,WORDS.verbsAdv)} ${choice(r,WORDS.objsAdv)}.`,(r)=>`${choice(r,WORDS.subjAdv)} should ${choice(r,["thoroughly","cautiously","systematically"])} ${choice(r,WORDS.verbsAdv)} ${choice(r,WORDS.objsAdv)} ${choice(r,["before","after"])} we ${choice(r,WORDS.verbsAdv)} it.`,(r)=>`Although ${choice(r,WORDS.subjAdv).toLowerCase()} appears convincing, the data ${choice(r,["rarely","seldom","hardly ever"])} ${choice(r,["corroborate","support","validate"])} it.`,(r)=>`${choice(r,WORDS.subjAdv)} ${choice(r,["nevertheless","consequently","accordingly"])} ${choice(r,["suggests","implies","demonstrates"])} limitations.`]} ;
+const BASE_PHRASES={beginner:{"Daily basics":["Hello, how are you?","Nice to meet you.","I live in Finland.","What time is it?","Could you help me?"],"Travel":["I would like a coffee, please.","Where is the bus station?","How much does it cost?","I have a reservation.","Can I pay by card?"]},intermediate:{"Small talk":["It's been a while, hasn't it?","I'm looking forward to the weekend.","The weather is quite unpredictable.","I work remotely most of the time.","Could you speak a bit slower?"],"Work":["Let's align on our priorities.","I'll share the draft by tomorrow.","This feature needs more polishing.","We need to reconsider the timeline.","I appreciate your feedback."]},advanced:{"Debate":["From a broader perspective, it's nuanced.","We should challenge our assumptions.","Let's quantify the potential trade-offs.","I strongly disagree with that premise.","The evidence suggests otherwise."],"Fluency":["He handled the situation gracefully.","That conclusion is far from inevitable.","It's a matter of balancing constraints.","I find that argument unconvincing.","We ended up reaching a compromise."]}};
+const MINIMAL_PAIRS=[["ship","sheep"],["bit","beat"],["full","fool"],["live","leave"],["fit","feet"],["sit","seat"],["pull","pool"],["chip","cheap"],["wick","weak"],["hit","heat"],["cat","cut"],["bed","bad"],["man","men"],["hat","hut"],["pan","pen"]];
+const TONGUE_TWISTERS=["She sells seashells by the seashore.","Red lorry, yellow lorry.","Truly rural.","Black background, brown background.","Unique New York.","A proper copper coffee pot.","Green glass globes glow greenly.","Six sleek swans swam swiftly southwards."];
+function buildMinimalPairSentences(){const out=[];MINIMAL_PAIRS.forEach(([a,b])=>{out.push(`I saw a ${a} near the beach.`);out.push(`I saw a ${b} near the beach.`);out.push(`This ${a}/${b} contrast is tricky to pronounce.`);});return out;}
+function makeMega(level,size=1200,seed=42){const r=PRNG(seed);const gens=TEMPLATES[level];const set=new Set();const arr=[];while(arr.length<size){const s=cap(choice(r,gens)(r)).replace(/\s+/g,' ').trim();if(!set.has(s)){set.add(s);arr.push(s);}}for(let i=arr.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+/* ===== BIG VOCAB ===== */
+const VOCAB={
+  "Starter 1":[["apple","яблоко"],["book","книга"],["friend","друг"],["family","семья"],["city","город"],["morning","утро"],["water","вода"],["music","музыка"],["work","работа"],["travel","путешествовать"]],
+  "Starter 2":[["beautiful","красивый"],["quickly","быстро"],["often","часто"],["because","потому что"],["before","до"],["after","после"],["between","между"],["always","всегда"],["usually","обычно"],["sometimes","иногда"]],
+  "Core A1":[
+    ["time","время"],["day","день"],["week","неделя"],["month","месяц"],["year","год"],["today","сегодня"],["tomorrow","завтра"],["yesterday","вчера"],
+    ["morning","утро"],["afternoon","день"],["evening","вечер"],["night","ночь"],
+    ["man","мужчина"],["woman","женщина"],["child","ребёнок"],["people","люди"],["name","имя"],
+    ["food","еда"],["bread","хлеб"],["milk","молоко"],["tea","чай"],["coffee","кофе"],["sugar","сахар"],["salt","соль"],["meat","мясо"],["fish","рыба"],["egg","яйцо"],["rice","рис"],["soup","суп"],["fruit","фрукты"],["vegetable","овощ"],
+    ["breakfast","завтрак"],["lunch","обед"],["dinner","ужин"],
+    ["house","дом"],["room","комната"],["kitchen","кухня"],["bathroom","ванная"],["bed","кровать"],["table","стол"],["chair","стул"],["window","окно"],["door","дверь"],["key","ключ"],
+    ["street","улица"],["road","дорога"],["shop","магазин"],["market","рынок"],["bank","банк"],["post office","почта"],["hospital","больница"],["pharmacy","аптека"],["school","школа"],["university","университет"],["airport","аэропорт"],["station","станция"],
+    ["bus","автобус"],["train","поезд"],["ticket","билет"],["car","машина"],["bike","велосипед"],["taxi","такси"],
+    ["left","лево"],["right","право"],["straight","прямо"],["near","рядом"],["far","далеко"],
+    ["small","маленький"],["big","большой"],["long","длинный"],["short","короткий"],["good","хороший"],["bad","плохой"],["easy","лёгкий"],["difficult","сложный"],["new","новый"],["old","старый/старое"],["hot","горячий"],["cold","холодный"],
+    ["open","открывать"],["close","закрывать"],["come","приходить"],["go","идти"],["take","брать"],["give","давать"],["find","находить"],["need","нужно"],["want","хотеть"],["like","нравиться"],["know","знать"],["understand","понимать"],["help","помогать"],["call","звонить"],
+    ["buy","покупать"],["sell","продавать"],["pay","платить"],["cost","стоить"],["cheap","дешёвый"],["expensive","дорогой"],
+    ["now","сейчас"],["here","здесь"],["there","там"],["who","кто"],["what","что"],["where","где"],["when","когда"],["why","почему"],["how","как"]
+  ],
+  "Core A2":[
+    ["early","рано"],["late","поздно"],["busy","занятой"],["free","свободный"],["ready","готовый"],["sure","уверенный"],["maybe","возможно"],
+    ["already","уже"],["still","всё ещё"],["just","только что"],["almost","почти"],["enough","достаточно"],
+    ["always","всегда"],["often","часто"],["rarely","редко"],["never","никогда"],
+    ["begin","начинать"],["finish","заканчивать"],["continue","продолжать"],["improve","улучшать"],["try","пытаться"],["decide","решать"],["choose","выбирать"],
+    ["invite","приглашать"],["agree","соглашаться"],["prefer","предпочитать"],["remember","помнить"],["forget","забывать"],
+    ["send","отправлять"],["receive","получать"],["borrow","брать взаймы"],["lend","давать взаймы"],["bring","приносить"],["carry","нести"],["keep","хранить"],["lose","терять"],["win","побеждать"],
+    ["clean","чистить"],["wash","мыть"],["cook","готовить"],["drive","вести (машину)"],["travel","путешествовать"],["arrive","прибывать"],["leave","уезжать"],
+    ["healthy","здоровый"],["tired","уставший"],["hungry","голодный"],["thirsty","хочущий пить"],["angry","злой"],["afraid","испуганный"],["happy","счастливый"],["sad","грустный"],
+    ["beautiful","красивый"],["quiet","тихий"],["noisy","шумный"],["comfortable","удобный"],["useful","полезный"],["necessary","необходимый"],
+    ["internet","интернет"],["email","электронная почта"],["message","сообщение"],["password","пароль"],["file","файл"],["folder","папка"],["download","скачивать"],["upload","загружать"],
+    ["meeting","встреча"],["report","отчёт"],["project","проект"],["task","задача"],["deadline","дедлайн"],["salary","зарплата"],["vacation","отпуск"],
+    ["doctor","врач"],["patient","пациент"],["medicine","лекарство"],["appointment","запись (к врачу)"],
+    ["rain","дождь"],["snow","снег"],["wind","ветер"],["cloud","облако"],["weather","погода"],["temperature","температура"],
+    ["north","север"],["south","юг"],["east","восток"],["west","запад"],
+    ["opinion","мнение"],["advice","совет"],["reason","причина"],["problem","проблема"],["solution","решение"]
+  ]
+};
+
+/* ===== Similarity ===== */
+function norm(s){return (s||"").toLowerCase().replace(/[^a-z'\s]+/g,'').replace(/\s+/g,' ').trim();}
+function levenshtein(a,b){a=norm(a);b=norm(b);const m=a.length,n=b.length;if(!m) return n;if(!n) return m;const dp=Array(n+1);for(let j=0;j<=n;j++) dp[j]=j;for(let i=1;i<=m;i++){let prev=dp[0]++;for(let j=1;j<=n;j++){const tmp=dp[j];dp[j]=Math.min(dp[j]+1,dp[j-1]+1,prev+(a[i-1]===b[j-1]?0:1));prev=tmp;}}return dp[n]}
+function similarity(a,b){a=norm(a);b=norm(b);if(!a&&!b) return 1;const d=levenshtein(a,b);const m=Math.max(a.length,b.length)||1;return 1-d/m}
+function pct(x){return Math.round(x*100)}
+function setBar(el,v){el.style.width=Math.max(0,Math.min(100,v))+'%'}
+function setScoreClass(el,score){el.classList.remove('good','mid','bad');el.classList.add(score>=85?'good':score>=60?'mid':'bad')}
+
+/* ===== Speech & VU ===== */
+const synth=window.speechSynthesis;let voices=[];
+function populateVoices(){voices=synth.getVoices().filter(v=>/^en/i.test(v.lang));const sel=$('#voiceSel');if(!sel) return;sel.innerHTML='';voices.forEach((v,i)=>{const o=document.createElement('option');o.value=i;o.textContent=`${v.name} — ${v.lang}`;sel.appendChild(o);});if(voices.length) sel.value=0;}
+populateVoices();if(typeof speechSynthesis!=='undefined'){speechSynthesis.onvoiceschanged=populateVoices;}
+function speak(text){if(!text) return;const u=new SpeechSynthesisUtterance(text);const v=voices[$('#voiceSel').value]||voices[0];if(v) u.voice=v;u.rate=parseFloat($('#rate')?.value||1);u.pitch=parseFloat($('#pitch')?.value||1);u.volume=parseFloat($('#volume')?.value||1);speechSynthesis.cancel();speechSynthesis.speak(u);}
+
+let recognizer=null,recognizing=false,liveBuffer='';
+function initRecognizer(lang){const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR){$('#permNote')&&($('#permNote').textContent='⚠️ Web Speech API не поддерживается этим браузером.'); return null;} const r=new SR(); r.lang=lang||'en-US'; r.interimResults=true; r.continuous=true; r.maxAlternatives=1; return r;}
+function startRecognition(lang,onUpdate,onEnd){
+  if(recognizing){ try{recognizer&&recognizer.stop();}catch(e){} recognizing=false; }
+  recognizer=initRecognizer(lang);
+  if(!recognizer) return;
+  liveBuffer='';
+  recognizer.onresult=(ev)=>{let interim='';for(let i=ev.resultIndex;i<ev.results.length;i++){const res=ev.results[i];if(res.isFinal) liveBuffer+=res[0].transcript;else interim+=res[0].transcript;}onUpdate(liveBuffer+interim);};
+  recognizer.onend=()=>{recognizing=false; onEnd&&onEnd(liveBuffer);};
+  recognizer.onerror=(e)=>{console.warn(e); recognizing=false; onEnd&&onEnd(liveBuffer);};
+  recognizer.start(); recognizing=true;
+}
+function stopRecognition(){try{recognizer&&recognizer.stop();}catch(e){} recognizing=false;}
+
+let audioCtx,analyser,rafVU;
+async function ensureVU(el){ try{ if(!audioCtx){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); const stream=await navigator.mediaDevices.getUserMedia({audio:true}); const src=audioCtx.createMediaStreamSource(stream); analyser=audioCtx.createAnalyser(); analyser.fftSize=1024; src.connect(analyser); } const bars=[...el.children]; if(!bars.length){ for(let i=0;i<32;i++){const d=document.createElement('div');el.appendChild(d);} } const buf=new Uint8Array(analyser.frequencyBinCount);
+  function loop(){ analyser.getByteTimeDomainData(buf); let sum=0; for(let i=0;i<buf.length;i++){const v=(buf[i]-128)/128; sum+=v*v;} const rms=Math.sqrt(sum/buf.length); const level=Math.min(1,rms*6); const active=Math.floor(level*bars.length); bars.forEach((b,idx)=>{const on=idx<active; b.style.height=(on?20+idx%5*6:6)+'px'; b.style.background=on?`linear-gradient(180deg, ${idx>bars.length*0.7?'#ff5c7a':idx>bars.length*0.4?'#ffcf5c':'#35d07f'}, #1a2330)`:'#101826';}); rafVU=requestAnimationFrame(loop); } cancelAnimationFrame(rafVU); loop(); }catch(e){ console.warn(e); $('#permNote')&&($('#permNote').textContent='Микрофон недоступен. Разрешите доступ в адресной строке.'); }}
+
+/* ===== Google-accurate Translator (EN→RU) ===== */
+const trCache=new Map();
+function setTranslatorStatus(msg){const el=$('#translatorStatus');if(el) el.textContent=msg;}
+
+function hasCyrillic(s){return /[А-Яа-яЁё]/.test(s);}
+
+// Parse Google translate_a/single response
+function parseGtx(json){
+  // json is array: [[["перевод","source",...],...],...]
+  const arr=json && json[0]; if(!Array.isArray(arr)) return '';
+  let out='';
+  for(const seg of arr){ if(seg && seg[0]) out+=seg[0]; }
+  return out;
+}
+
+async function translateGoogle(text){
+  const key='gtx:'+text.trim();
+  if(trCache.has(key)) return trCache.get(key);
+  try{
+    const url=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=${encodeURIComponent(text)}`;
+    const resp=await fetch(url,{headers:{'Accept':'application/json'}});
+    const data=await resp.json();
+    let out=parseGtx(data)||'';
+    out=out.replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+    if(!hasCyrillic(out)){ throw new Error('Non-RU result'); }
+    trCache.set(key,out); setTranslatorStatus('Google');
+    return out;
+  }catch(e){
+    console.warn('Google translate failed/returned non-RU, fallback to MyMemory',e);
+    setTranslatorStatus('Google fallback');
+    return await translateMyMemory(text);
+  }
+}
+
+async function translateMyMemory(text){
+  const key='mm:'+text.trim();
+  if(trCache.has(key)) return trCache.get(key);
+  try{
+    const url=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ru`;
+    const resp=await fetch(url,{headers:{'Accept':'application/json'}});
+    const data=await resp.json();
+    let out=(data && data.responseData && data.responseData.translatedText)||'';
+    out=out.replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+    if(!hasCyrillic(out)) out='';
+    trCache.set(key,out); return out;
+  }catch(e){ console.warn('MyMemory failed',e); return ''; }
+}
+
+async function smartTranslate(text){
+  const g=await translateGoogle(text);
+  return g || (await translateMyMemory(text)) || text;
+}
+
+function debounce(fn,ms){let t;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);}}
+
+/* ===== State & UI bindings ===== */
+let state={level:'beginner',packKey:null,phrases:[],idx:0,target:'',live:'',best:0};
+function bestKey(level,pack,phrase){return `best::${level}::${pack}::${phrase}`}
+function loadBestBadge(){const key=bestKey(state.level,state.packKey,state.target);const best=parseInt(localStorage.getItem(key)||'0',10);state.best=best;$('#bestRecord').textContent='🏆 '+best+'%';}
+async function applyPhrase(){
+  state.target=state.phrases[state.idx]||'';
+  $('#targetPhrase').textContent=state.target;
+  $('#targetTrans').textContent='…';
+  $('#gtTarget').href=`https://translate.google.com/?sl=en&tl=ru&text=${encodeURIComponent(state.target)}&op=translate`;
+  $('#liveText').textContent=''; $('#liveTrans').textContent='';
+  $('#gtLive').href=`https://translate.google.com/?sl=en&tl=ru&text=&op=translate`;
+  $('#simText').textContent='0%';$('#simText').className='score';setBar($('#simBar'),0);
+  loadBestBadge();
+  $('#targetTrans').textContent=await smartTranslate(state.target);
+}
+const liveTranslateDebounced=debounce(async ()=>{
+  const txt=$('#liveText').textContent||'';
+  $('#liveTrans').textContent=txt? '…' : '';
+  if(txt){ $('#liveTrans').textContent=await smartTranslate(txt); }
+},250);
+
+function rebuildPhraseList(){const list=$('#phraseList');list.innerHTML='';state.phrases.forEach((p,i)=>{const btn=document.createElement('button');btn.className='phrase row';const left=document.createElement('span');left.textContent=p;const right=document.createElement('span');right.className='pill';right.textContent='▶';btn.append(left,right);btn.onclick=()=>{state.idx=i;applyPhrase()};list.appendChild(btn);});}
+function maybeSaveBest(score){const key=bestKey(state.level,state.packKey,state.target);const prev=parseInt(localStorage.getItem(key)||'0',10);if(score>prev){localStorage.setItem(key,String(score));state.best=score;$('#bestRecord').textContent='🏆 '+score+'%';}}
+function onLiveUpdate(txt){
+  state.live=txt;$('#liveText').textContent=txt;
+  liveTranslateDebounced();
+  const s=pct(similarity(state.target,txt));setBar($('#simBar'),s);const el=$('#simText');el.textContent=s+'%';setScoreClass(el,s);maybeSaveBest(s);
+}
+function onEndFinal(){}
+
+/* ===== Custom phrase ===== */
+let custom={target:'',live:'',best:0};
+const customTranslateDebounced=debounce(async ()=>{
+  const txt=$('#liveCustom').textContent||'';
+  $('#liveCustomTrans').textContent=txt? '…' : '';
+  if(txt){ $('#liveCustomTrans').textContent=await smartTranslate(txt); }
+},250);
+async function onLiveUpdateCustom(txt){
+  custom.live=txt;$('#liveCustom').textContent=txt;
+  customTranslateDebounced();
+  const s=pct(similarity(custom.target,txt));setBar($('#simBarCustom'),s);const el=$('#simTextCustom');el.textContent=s+'%';setScoreClass(el,s);
+  const key=`best::custom::${custom.target}`;const prev=parseInt(localStorage.getItem(key)||'0',10);if(s>prev){localStorage.setItem(key,String(s));}
+}
+function onEndFinalCustom(){}
+
+/* ===== Vocab ===== */
+let vocab={setKeys:Object.keys(VOCAB),idxSet:0,idxWord:0};
+function applyVocabSet(){const key=vocab.setKeys[vocab.idxSet];const list=VOCAB[key];$('#vocabList').innerHTML='';vocab.setKeys.forEach((k,i)=>{const b=document.createElement('button');b.className='phrase row';b.textContent=k;b.onclick=()=>{vocab.idxSet=i;vocab.idxWord=0;applyVocabWord();applyVocabSet();};if(i===vocab.idxSet) b.style.outline='2px solid var(--accent)';$('#vocabList').appendChild(b);});$('#vocabProgress').textContent=`${vocab.idxWord+1}/${list.length}`;}
+function applyVocabWord(){const set=VOCAB[vocab.setKeys[vocab.idxSet]];const [w,t]=set[vocab.idxWord];$('#vocabWord').textContent=w;$('#vocabTrans').textContent=t;$('#vocabTrans').style.display='none';$('#vocabProgress').textContent=`${vocab.idxWord+1}/${set.length}`;}
+
+/* ===== Phrase packs ===== */
+let PHRASES=null;
+function buildPhrasePacks(){
+  PHRASES={beginner:{},intermediate:{},advanced:{}};
+  Object.assign(PHRASES.beginner,BASE_PHRASES.beginner);
+  Object.assign(PHRASES.intermediate,BASE_PHRASES.intermediate);
+  Object.assign(PHRASES.advanced,BASE_PHRASES.advanced);
+  const mp=buildMinimalPairSentences();
+  PHRASES.beginner["Minimal Pairs (Pronunciation)"]=mp.slice(0,Math.min(120,mp.length));
+  PHRASES.intermediate["Minimal Pairs (Pronunciation)"]=mp;
+  PHRASES.beginner["Tongue Twisters"]=TONGUE_TWISTERS;
+  PHRASES.intermediate["Tongue Twisters"]=TONGUE_TWISTERS;
+  PHRASES.advanced["Tongue Twisters"]=TONGUE_TWISTERS;
+  const size=parseInt($('#megaSize')?.value||1200,10);
+  const seed=parseInt($('#megaSeed')?.value||42,10);
+  PHRASES.beginner["Mega Pack (Auto)"]=makeMega('beginner',size,seed);
+  PHRASES.intermediate["Mega Pack (Auto)"]=makeMega('intermediate',size,seed+1);
+  PHRASES.advanced["Mega Pack (Auto)"]=makeMega('advanced',size,seed+2);
+}
+function loadPackList(){
+  const packSel=$('#packSel');packSel.innerHTML='';
+  const packs=PHRASES[state.level];
+  Object.keys(packs).forEach((k)=>{const opt=document.createElement('option');opt.value=k;opt.textContent=k;packSel.appendChild(opt);});
+  state.packKey=Object.keys(packs)[0];packSel.value=state.packKey;
+  state.phrases=packs[state.packKey];state.idx=0;applyPhrase();rebuildPhraseList();
+}
+
+/* ===== Pack Updater (URL & File) ===== */
+function mergePacks(newPacks){
+  let count=0;
+  for(const k of Object.keys(newPacks||{})){
+    if(Array.isArray(newPacks[k])){
+      if(Array.isArray(newPacks[k][0]) && newPacks[k][0].length===2){
+        VOCAB[k]=newPacks[k]; count+=newPacks[k].length;
+      }else{
+        if(!PHRASES) buildPhrasePacks();
+        (PHRASES.beginner[k]??=newPacks[k]);
+        (PHRASES.intermediate[k]??=newPacks[k]);
+        (PHRASES.advanced[k]??=newPacks[k]);
+        count+=newPacks[k].length;
+      }
+    }
+  }
+  vocab.setKeys=Object.keys(VOCAB);
+  applyVocabSet();
+  return count;
+}
+async function loadPacksFromUrl(){
+  const url=$('#packsUrl').value.trim();
+  if(!url) return alert('Укажите URL до JSON.');
+  try{
+    const resp=await fetch(url);
+    const json=await resp.json();
+    const n=mergePacks(json);
+    alert('Загружено элементов: '+n);
+    loadPackList();
+  }catch(e){ console.error(e); alert('Не удалось загрузить JSON по URL. Подробности в консоли.'); }
+}
+function loadPacksFromFile(){
+  const f=$('#packsFile').files[0];
+  if(!f) return alert('Выберите файл JSON.');
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const json=JSON.parse(reader.result);
+      const n=mergePacks(json);
+      alert('Импортировано элементов: '+n);
+      loadPackList();
+    }catch(e){ console.error(e); alert('Не удалось распарсить JSON из файла.'); }
+  };
+  reader.readAsText(f);
+}
+
+/* ===== Custom vocab import ===== */
+function parseUserVocab(text){
+  const lines=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const items=[];
+  for(const line of lines){
+    const m=line.split(/[-–—;]|->|:/);
+    if(m.length>=2){
+      const w=(m[0]||'').trim(); const t=(m.slice(1).join(' ')||'').trim();
+      if(w && t) items.push([w,t]);
+    }
+  }
+  return items;
+}
+
+/* ===== Init ===== */
+function initUI(){
+  const vus=[$('#vu'),$('#vu2')];vus.forEach(el=>{if(el){for(let i=0;i<32;i++){const d=document.createElement('div');el.appendChild(d);} ensureVU(el);}});
+
+  // Translator mode button left for future, but fixed Google under the hood
+  $('#toggleTranslator').onclick=()=>{setTranslatorStatus('Google');};
+
+  buildPhrasePacks();
+
+  $('#levelSel').addEventListener('change',e=>{state.level=e.target.value;loadPackList();});
+  $('#packSel').addEventListener('change',e=>{state.packKey=e.target.value;state.phrases=PHRASES[state.level][state.packKey];state.idx=0;applyPhrase();rebuildPhraseList();});
+  $('#regenMega').addEventListener('click',()=>{buildPhrasePacks();loadPackList();});
+
+  $('#loadPacksUrl').onclick=loadPacksFromUrl;
+  $('#loadPacksFile').onclick=loadPacksFromFile;
+
+  $('#speakBtn').onclick=()=>speak(state.target);
+  $('#recBtn').onclick=()=>{startRecognition($('#recLang').value,onLiveUpdate,onEndFinal);};
+  $('#finishBtn').onclick=()=>stopRecognition();
+  $('#prevBtn').onclick=()=>{state.idx=(state.idx-1+state.phrases.length)%state.phrases.length;applyPhrase();};
+  $('#nextBtn').onclick=()=>{state.idx=(state.idx+1)%state.phrases.length;applyPhrase();};
+
+  window.addEventListener('keydown',(e)=>{if(e.key.toLowerCase()==='l') $('#speakBtn').click();if(e.key.toLowerCase()==='g') $('#recBtn').click();if(e.key==='ArrowLeft') $('#prevBtn').click();if(e.key==='ArrowRight') $('#nextBtn').click();});
+
+  $('#ttsCustom').onclick=async()=>{custom.target=$('#customText').value.trim();$('#customTargetTrans').textContent=await smartTranslate(custom.target);$('#gtCustomTarget').href=`https://translate.google.com/?sl=en&tl=ru&text=${encodeURIComponent(custom.target)}&op=translate`;speak(custom.target);};
+  $('#recCustom').onclick=async()=>{custom.target=$('#customText').value.trim()||' ';$('#customTargetTrans').textContent=await smartTranslate(custom.target);$('#gtCustomTarget').href=`https://translate.google.com/?sl=en&tl=ru&text=${encodeURIComponent(custom.target)}&op=translate`;startRecognition($('#recLang')?.value||'en-US',onLiveUpdateCustom,onEndFinalCustom);};
+  $('#finishCustom').onclick=()=>stopRecognition();
+
+  vocab.setKeys=Object.keys(VOCAB);
+  applyVocabSet();applyVocabWord();
+  $('#vocabPrev').onclick=()=>{const set=VOCAB[vocab.setKeys[vocab.idxSet]];vocab.idxWord=(vocab.idxWord-1+set.length)%set.length;applyVocabWord();};
+  $('#vocabNext').onclick=()=>{const set=VOCAB[vocab.setKeys[vocab.idxSet]];vocab.idxWord=(vocab.idxWord+1)%set.length;applyVocabWord();};
+  $('#vocabSpeak').onclick=()=>speak($('#vocabWord').textContent);
+  $('#vocabReveal').onclick=()=>$('#vocabTrans').style.display='block';
+  $('#markEasy').onclick=()=>{$('#vocabNext').click();};
+  $('#markHard').onclick=()=>{$('#vocabNext').click();};
+
+  $('#addVocabSet').onclick=()=>{
+    const name=($('#vocabSetName').value||'My Words').trim();
+    const items=parseUserVocab($('#vocabImport').value||'');
+    if(!items.length){alert('Добавьте хотя бы одну строку со словом и переводом.');return;}
+    VOCAB[name]=items;
+    vocab.setKeys=Object.keys(VOCAB);
+    vocab.idxSet=vocab.setKeys.indexOf(name);
+    vocab.idxWord=0;
+    applyVocabWord();applyVocabSet();
+    $('#vocabImport').value='';
+    alert(`Набор «${name}» добавлен: ${items.length} слов.`);
+  };
+
+  $('#supportNote').textContent='🎤 '+(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia?'Микрофон поддерживается':'Микрофон не поддерживается')+' · '+((window.SpeechRecognition||window.webkitSpeechRecognition)?'Распознавание поддерживается':'Распознавание не поддерживается');
+
+  setTranslatorStatus('Google');
+  applyI18N();
+  loadPackList();
+}
+initUI();
+document.addEventListener('visibilitychange',()=>{if(document.hidden) stopRecognition();});
+</script>
+</body>
+</html>
